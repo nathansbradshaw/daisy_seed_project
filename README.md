@@ -1,51 +1,104 @@
-# daisy-rust-playground
+# Getting Started with Embedded Rust
 
-A working prototype for Daisy Seed Rev 5.
+This guide will help you set up your environment for embedded development using Rust. We'll cover the installation of necessary tools and libraries, and show you how to flash your program to a microcontroller and debug it.
 
-I am developing [`lyd`](https://github.com/chaosprint/lyd), a rust audio lib, and it can now make some basic sound.
+## Prerequisites
 
-An experimental idea is [`ljud`](https://github.com/chaosprint/ljud) which uses Box and dyn Trait.
+Ensure you have Rust installed on your system. If not, you can install it from the [official Rust website](https://www.rust-lang.org/tools/install).
 
-## Usage
+## Required Libraries and Tools
 
-1. install rust
-make sure you have the right version:
+1. **Add the Rust Target for ARM Cortex-M microcontrollers:**
+
+   ```sh
+   rustup target add thumbv7em-none-eabihf
+   ```
+
+2. **Add LLVM Tools:**
+
+   ```sh
+   rustup component add llvm-tools-preview
+   ```
+
+3. **Install cargo-binutils:**
+
+   ```sh
+   cargo install cargo-binutils
+   ```
+
+4. **Install cargo-embed:**
+
+   ```sh
+   cargo install cargo-embed
+   ```
+
+   `cargo-embed` is used for flashing your program to the microcontroller and provides a basic debugger.
+
+## Flashing Your Program
+
+To flash your program to a microcontroller, navigate to your project directory in the terminal and run:
+
+```sh
+cargo embed
 ```
-rustc -V    
-```
-> ```rustc 1.64.0 (a55dd71d5 2022-09-19)```
 
-2. add the target:
+This command reads your `Embed.toml` configuration file (if present) and flashes the program accordingly.
 
-```
-rustup target add thumbv7em-none-eabihf
-```
+## Setting Up the Debugger
 
-3. install tools:
+### Linux
 
-https://github.com/rust-embedded/cargo-binutils
+- Install `gdb-multiarch` to debug a wide range of architectures:
 
-https://dfu-util.sourceforge.net/
+  ```sh
+  sudo apt-get install gdb-multiarch
+  ```
 
-4. build:
-```
-cargo objcopy --release -- -O binary a.bin 
-```
-5. connect daisy seed; hold [boot] and click on [reset]; then run the code below:
-```
-dfu-util -a 0 -s 0x08000000 -D a.bin
-```
+### Windows
 
-## Disclaimer
+- Download and install the [Arm GNU Toolchain](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads). This package includes `arm-none-eabi-gdb`, which is the debugger for ARM microcontrollers.
 
-This is based on:
+### macOS
 
-https://github.com/backtail/daisy-blank
+- Use Homebrew to install the ARM version of GDB:
 
-https://github.com/backtail/libdaisy-rust
+  ```sh
+  brew install arm-none-eabi-gdb
+  ```
 
-and the examples in:
+## Debugging Your Program
 
-https://github.com/stm32-rs/stm32h7xx-hal/
+To start a debug session, you need a GDB server running for your specific microcontroller. This might be provided by `cargo embed`, OpenOCD, or JLinkGDBServer, depending on your setup.
 
-Tested on daisy seed rev 5.
+1. **Start the GDB Server** (if not automatically started by `cargo embed`):
+
+   This step varies depending on your hardware and the software you're using as a GDB server. Refer to your hardware's documentation or the documentation of the GDB server software.
+
+2. **Connect to the GDB Server:**
+
+   - For Linux and macOS, you can use `gdb-multiarch` or `arm-none-eabi-gdb` respectively.
+   - For Windows, use the `arm-none-eabi-gdb` from the GNU Arm Toolchain.
+
+   Open a terminal and run:
+
+   ```sh
+   gdb-multiarch target/thumbv7em-none-eabihf/debug/synth-phone-e-v2-rust
+   ```
+
+   Replace `gdb-multiarch` with `arm-none-eabi-gdb` if you're on Windows or macOS
+
+
+3. **Inside GDB**, connect to the local GDB server:
+
+   ```gdb
+   target remote :1337
+   ```
+
+   The port `1337` is an example; use the port number on which your GDB server is running.
+
+You're now ready to debug your program using GDB commands!
+
+## Further Learning
+
+- The [Embedded Rust Book](https://docs.rust-embedded.org/book/) is an excellent resource for learning more about embedded development with Rust.
+- Check out [The Discovery Book](https://docs.rust-embedded.org/discovery/) for hands-on projects aimed at beginners.
